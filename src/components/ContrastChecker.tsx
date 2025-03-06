@@ -1,13 +1,13 @@
-
 import { useState } from 'react';
 import UrlForm from './UrlForm';
 import HeatmapGrid from './HeatmapGrid';
 import ResultsPanel from './ResultsPanel';
-import { captureScreenshot, isUrlAccessible } from '@/utils/chromeUtils';
-import { analyzeScreenshot, ColorPair, AnalysisResult } from '@/utils/contrastUtils';
+import { isUrlAccessible } from '@/utils/chromeUtils';
+import { AnalysisResult } from '@/utils/contrastUtils';
 import { useToast } from '@/components/ui/use-toast';
 import { Card } from '@/components/ui/card';
 import { Loader2, Scan, Image, AlertTriangle } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 const ContrastChecker = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -38,30 +38,25 @@ const ContrastChecker = () => {
         return;
       }
       
-      // Capture screenshot
-      setCurrentStep('capturing');
-      toast({
-        title: "Processing",
-        description: "Capturing screenshot...",
-      });
-      
-      const screenshot = await captureScreenshot(url);
-      
-      // Analyze the screenshot
+      // Call our edge function to analyze the contrast
       setCurrentStep('analyzing');
       toast({
         title: "Processing",
         description: "Analyzing contrast...",
       });
       
-      const analysisResult = await analyzeScreenshot(url, screenshot);
+      const { data, error } = await supabase.functions.invoke('analyze-contrast', {
+        body: { url }
+      });
+
+      if (error) throw error;
       
       // Set the result
-      setResult(analysisResult);
+      setResult(data as AnalysisResult);
       
       // Set the first color pair as selected
-      if (analysisResult.colorPairs.length > 0) {
-        setSelectedPair(analysisResult.colorPairs[0]);
+      if (data.color_pairs.length > 0) {
+        setSelectedPair(data.color_pairs[0]);
       }
       
       toast({
@@ -81,12 +76,11 @@ const ContrastChecker = () => {
       setCurrentStep('idle');
     }
   };
-  
+
   const handleAreaSelect = (colorPair: ColorPair) => {
     setSelectedPair(colorPair);
   };
 
-  // Loading component based on current step
   const renderLoading = () => {
     const steps = {
       checking: {

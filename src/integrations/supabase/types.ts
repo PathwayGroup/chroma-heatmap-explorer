@@ -33,6 +33,33 @@ export type Database = {
         }
         Relationships: []
       }
+      contrast_analyses: {
+        Row: {
+          color_pairs: Json
+          id: string
+          screenshot: string
+          summary: Json
+          timestamp: string
+          url: string
+        }
+        Insert: {
+          color_pairs: Json
+          id?: string
+          screenshot: string
+          summary: Json
+          timestamp?: string
+          url: string
+        }
+        Update: {
+          color_pairs?: Json
+          id?: string
+          screenshot?: string
+          summary?: Json
+          timestamp?: string
+          url?: string
+        }
+        Relationships: []
+      }
       Dzesa: {
         Row: {
           created_at: string
