@@ -7,9 +7,11 @@ import { captureScreenshot, isUrlAccessible } from '@/utils/chromeUtils';
 import { analyzeScreenshot, ColorPair, AnalysisResult } from '@/utils/contrastUtils';
 import { useToast } from '@/components/ui/use-toast';
 import { Card } from '@/components/ui/card';
+import { Loader2, Scan, Image, AlertTriangle } from 'lucide-react';
 
 const ContrastChecker = () => {
   const [isLoading, setIsLoading] = useState(false);
+  const [currentStep, setCurrentStep] = useState<'idle' | 'checking' | 'capturing' | 'analyzing'>('idle');
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<AnalysisResult | null>(null);
   const [selectedPair, setSelectedPair] = useState<ColorPair | null>(null);
@@ -17,6 +19,7 @@ const ContrastChecker = () => {
 
   const handleUrlSubmit = async (url: string) => {
     setIsLoading(true);
+    setCurrentStep('checking');
     setError(null);
     setResult(null);
     setSelectedPair(null);
@@ -31,10 +34,12 @@ const ContrastChecker = () => {
           description: "The website is not accessible",
           variant: "destructive",
         });
+        setIsLoading(false);
         return;
       }
       
       // Capture screenshot
+      setCurrentStep('capturing');
       toast({
         title: "Processing",
         description: "Capturing screenshot...",
@@ -43,6 +48,7 @@ const ContrastChecker = () => {
       const screenshot = await captureScreenshot(url);
       
       // Analyze the screenshot
+      setCurrentStep('analyzing');
       toast({
         title: "Processing",
         description: "Analyzing contrast...",
@@ -72,11 +78,42 @@ const ContrastChecker = () => {
       });
     } finally {
       setIsLoading(false);
+      setCurrentStep('idle');
     }
   };
   
   const handleAreaSelect = (colorPair: ColorPair) => {
     setSelectedPair(colorPair);
+  };
+
+  // Loading component based on current step
+  const renderLoading = () => {
+    const steps = {
+      checking: {
+        icon: <Scan className="w-10 h-10 text-primary animate-pulse" />,
+        message: "Checking website accessibility...",
+      },
+      capturing: {
+        icon: <Image className="w-10 h-10 text-primary animate-pulse" />,
+        message: "Capturing screenshot...",
+      },
+      analyzing: {
+        icon: <Loader2 className="w-10 h-10 text-primary animate-spin" />,
+        message: "Analyzing contrast ratios...",
+      }
+    };
+    
+    const currentStepInfo = steps[currentStep];
+    
+    return (
+      <div className="w-full p-12 rounded-lg border border-border bg-card/50 text-center">
+        <div className="flex flex-col items-center justify-center">
+          {currentStepInfo.icon}
+          <p className="text-muted-foreground mt-4">{currentStepInfo.message}</p>
+          <p className="text-xs text-muted-foreground mt-2">This may take a few moments</p>
+        </div>
+      </div>
+    );
   };
 
   return (
@@ -87,16 +124,14 @@ const ContrastChecker = () => {
       
       {error && (
         <div className="p-4 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive animate-fade-in">
-          {error}
+          <div className="flex items-center">
+            <AlertTriangle className="w-5 h-5 mr-2" />
+            <span>{error}</span>
+          </div>
         </div>
       )}
       
-      {isLoading && (
-        <div className="w-full p-12 rounded-lg border border-border bg-card/50 text-center animate-pulse-subtle">
-          <p className="text-muted-foreground">Analyzing website...</p>
-          <p className="text-xs text-muted-foreground mt-2">This may take a few moments</p>
-        </div>
-      )}
+      {isLoading && renderLoading()}
       
       {result && (
         <div className="space-y-6">

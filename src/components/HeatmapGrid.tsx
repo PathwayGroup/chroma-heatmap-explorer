@@ -1,6 +1,7 @@
 
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, useState } from 'react';
 import { ColorPair, getHeatmapColor } from '@/utils/contrastUtils';
+import { Loader2 } from 'lucide-react';
 
 interface HeatmapGridProps {
   screenshot: string;
@@ -10,17 +11,21 @@ interface HeatmapGridProps {
 
 const HeatmapGrid = ({ screenshot, colorPairs, onSelectArea }: HeatmapGridProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [isImageLoaded, setIsImageLoaded] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
   
   // Draw the heatmap overlay on the canvas
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (!canvas) return;
+    if (!canvas || !screenshot) return;
     
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
     
     // Clear the canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+    setIsImageLoaded(false);
+    setLoadError(null);
     
     // Load the screenshot image
     const image = new Image();
@@ -48,11 +53,14 @@ const HeatmapGrid = ({ screenshot, colorPairs, onSelectArea }: HeatmapGridProps)
         ctx.lineWidth = 1;
         ctx.strokeRect(x, y, width, height);
       });
+      
+      setIsImageLoaded(true);
     };
     
     // Handle image load error
     image.onerror = () => {
       console.error('Failed to load screenshot');
+      setLoadError('Failed to load screenshot');
       
       // Draw error message
       ctx.fillStyle = '#f8fafc';
@@ -66,7 +74,7 @@ const HeatmapGrid = ({ screenshot, colorPairs, onSelectArea }: HeatmapGridProps)
   
   // Handle canvas click to select an area
   const handleCanvasClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    if (!canvasRef.current || !onSelectArea) return;
+    if (!canvasRef.current || !onSelectArea || !isImageLoaded) return;
     
     const canvas = canvasRef.current;
     const rect = canvas.getBoundingClientRect();
@@ -90,14 +98,34 @@ const HeatmapGrid = ({ screenshot, colorPairs, onSelectArea }: HeatmapGridProps)
         <canvas
           ref={canvasRef}
           onClick={handleCanvasClick}
-          className="max-w-full h-auto cursor-pointer"
+          className={`max-w-full h-auto cursor-pointer ${isImageLoaded ? 'opacity-100' : 'opacity-50'}`}
           style={{ minHeight: '300px' }}
         />
         
         {/* Loading state */}
+        {!isImageLoaded && screenshot && !loadError && (
+          <div className="absolute inset-0 flex items-center justify-center bg-card/50">
+            <div className="text-center p-6 animate-pulse">
+              <Loader2 className="w-8 h-8 mx-auto mb-4 animate-spin text-primary" />
+              <p className="text-muted-foreground">Loading screenshot...</p>
+            </div>
+          </div>
+        )}
+        
+        {/* Error state */}
+        {loadError && (
+          <div className="absolute inset-0 flex items-center justify-center bg-card/50">
+            <div className="text-center p-6 text-destructive">
+              <p>{loadError}</p>
+              <p className="text-sm mt-2">Please try another URL</p>
+            </div>
+          </div>
+        )}
+        
+        {/* Empty state */}
         {!screenshot && (
           <div className="absolute inset-0 flex items-center justify-center bg-card/50">
-            <div className="text-center p-6 animate-pulse-subtle">
+            <div className="text-center p-6">
               <p className="text-muted-foreground">Screenshot will appear here</p>
             </div>
           </div>

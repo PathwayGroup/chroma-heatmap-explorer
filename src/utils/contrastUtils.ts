@@ -130,68 +130,16 @@ export const getHeatmapColor = (ratio: number): string => {
 };
 
 /**
- * Mock function to extract colors from an image
- * In a real implementation, this would use color quantization and image processing
- */
-export const extractColorsFromImage = (imageData: string): Promise<ColorPair[]> => {
-  return new Promise((resolve) => {
-    // This is a mock implementation
-    // In a real application, you would process the actual image data
-    
-    // Simulating some processing time
-    setTimeout(() => {
-      // Generate mock color pairs
-      const mockColorPairs: ColorPair[] = [
-        {
-          foreground: '#FFFFFF',
-          background: '#121212',
-          ratio: 16.15,
-          passes: checkWcagCompliance(16.15),
-          location: { x: 20, y: 30, width: 100, height: 50 }
-        },
-        {
-          foreground: '#FFD700',
-          background: '#000000',
-          ratio: 15.33,
-          passes: checkWcagCompliance(15.33),
-          location: { x: 150, y: 80, width: 120, height: 40 }
-        },
-        {
-          foreground: '#CCCCCC',
-          background: '#767676',
-          ratio: 2.45,
-          passes: checkWcagCompliance(2.45),
-          location: { x: 40, y: 150, width: 200, height: 30 }
-        },
-        {
-          foreground: '#336699',
-          background: '#FFFFFF',
-          ratio: 4.63,
-          passes: checkWcagCompliance(4.63),
-          location: { x: 300, y: 220, width: 150, height: 60 }
-        },
-        {
-          foreground: '#FF0000',
-          background: '#FFFFFF',
-          ratio: 4.01,
-          passes: checkWcagCompliance(4.01),
-          location: { x: 100, y: 300, width: 80, height: 40 }
-        },
-        // Add more mock color pairs as needed
-      ];
-      
-      resolve(mockColorPairs);
-    }, 1500);
-  });
-};
-
-/**
  * Analyze a screenshot and return the contrast analysis
+ * Now uses the improved color pair extraction from chromeUtils
  */
 export const analyzeScreenshot = async (url: string, screenshot: string): Promise<AnalysisResult> => {
   try {
-    // Extract colors from the screenshot
-    const colorPairs = await extractColorsFromImage(screenshot);
+    // Import here to avoid circular dependency
+    const { getColorPairsForUrl } = await import('./chromeUtils');
+    
+    // Get color pairs using the new function
+    const colorPairs = await getColorPairsForUrl(url);
     
     // Calculate summary statistics
     const summary = colorPairs.reduce(
@@ -230,3 +178,5 @@ export const analyzeScreenshot = async (url: string, screenshot: string): Promis
     throw new Error('Failed to analyze screenshot');
   }
 };
+
+// Function removed: extractColorsFromImage is no longer needed as we're using getColorPairsForUrl instead
