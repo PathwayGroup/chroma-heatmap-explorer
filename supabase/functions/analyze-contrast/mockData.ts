@@ -1,4 +1,22 @@
-import { ColorPair } from '../../../src/utils/contrastUtils';
+
+// Type definitions
+export interface ColorPair {
+  foreground: string;
+  background: string;
+  ratio: number;
+  passes: {
+    AA: boolean;
+    AALarge: boolean;
+    AAA: boolean;
+    AAALarge: boolean;
+  };
+  location: {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+  };
+}
 
 const mockWebsites = {
   'default': {
