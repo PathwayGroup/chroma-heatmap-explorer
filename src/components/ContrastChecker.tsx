@@ -3,7 +3,7 @@ import UrlForm from './UrlForm';
 import HeatmapGrid from './HeatmapGrid';
 import ResultsPanel from './ResultsPanel';
 import { isUrlAccessible } from '@/utils/chromeUtils';
-import { AnalysisResult } from '@/utils/contrastUtils';
+import { AnalysisResult, ColorPair } from '@/utils/contrastUtils';
 import { useToast } from '@/components/ui/use-toast';
 import { Card } from '@/components/ui/card';
 import { Loader2, Scan, Image, AlertTriangle } from 'lucide-react';
@@ -25,7 +25,6 @@ const ContrastChecker = () => {
     setSelectedPair(null);
     
     try {
-      // Check if URL is accessible
       const isAccessible = await isUrlAccessible(url);
       if (!isAccessible) {
         setError('The website is not accessible');
@@ -38,7 +37,6 @@ const ContrastChecker = () => {
         return;
       }
       
-      // Call our edge function to analyze the contrast
       setCurrentStep('analyzing');
       toast({
         title: "Processing",
@@ -51,12 +49,10 @@ const ContrastChecker = () => {
 
       if (error) throw error;
       
-      // Set the result
       setResult(data as AnalysisResult);
       
-      // Set the first color pair as selected
-      if (data.color_pairs.length > 0) {
-        setSelectedPair(data.color_pairs[0]);
+      if (data.colorPairs && data.colorPairs.length > 0) {
+        setSelectedPair(data.colorPairs[0]);
       }
       
       toast({

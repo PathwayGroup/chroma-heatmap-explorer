@@ -1,5 +1,6 @@
 
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+// Use a more recent version of the Deno standard library
+import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
 
@@ -22,8 +23,7 @@ serve(async (req) => {
     const { url } = await req.json();
     console.log('Analyzing contrast for URL:', url);
 
-    // For now, we'll use the mock data from chromeUtils
-    // In a production environment, this would use Puppeteer/Playwright
+    // For now, we'll use the mock data from mockData.ts
     const { getColorPairsForUrl } = await import('./mockData.ts');
     const colorPairs = await getColorPairsForUrl(url);
 
@@ -66,8 +66,14 @@ serve(async (req) => {
 
     if (error) throw error;
 
+    // Convert snake_case db response to camelCase for the frontend
+    const result = {
+      ...data,
+      colorPairs: data.color_pairs
+    };
+
     return new Response(
-      JSON.stringify(data),
+      JSON.stringify(result),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   } catch (error) {
