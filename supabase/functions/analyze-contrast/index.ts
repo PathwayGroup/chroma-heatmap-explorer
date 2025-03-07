@@ -24,7 +24,7 @@ serve(async (req) => {
     console.log('Analyzing contrast for URL:', url);
 
     // For now, we'll use the mock data from mockData.ts
-    const { getColorPairsForUrl } = await import('./mockData.ts');
+    const { getColorPairsForUrl } from './mockData.ts';
     const colorPairs = await getColorPairsForUrl(url);
 
     // Calculate summary statistics
@@ -68,8 +68,12 @@ serve(async (req) => {
 
     // Convert snake_case db response to camelCase for the frontend
     const result = {
-      ...data,
-      colorPairs: data.color_pairs
+      id: data.id,
+      url: data.url,
+      screenshot: data.screenshot,
+      colorPairs: data.color_pairs,
+      summary: data.summary,
+      createdAt: data.created_at
     };
 
     return new Response(
