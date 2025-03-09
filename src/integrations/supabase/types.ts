@@ -310,6 +310,51 @@ export type Database = {
           },
         ]
       }
+      mapping_collections: {
+        Row: {
+          array_mappers: Json | null
+          created_at: string
+          description: string | null
+          edges: Json
+          id: string
+          name: string
+          nodes: Json
+          source_json: string
+          target_json: string
+          template_variables: Json | null
+          transforms: Json
+          updated_at: string
+        }
+        Insert: {
+          array_mappers?: Json | null
+          created_at?: string
+          description?: string | null
+          edges: Json
+          id?: string
+          name: string
+          nodes: Json
+          source_json: string
+          target_json: string
+          template_variables?: Json | null
+          transforms: Json
+          updated_at?: string
+        }
+        Update: {
+          array_mappers?: Json | null
+          created_at?: string
+          description?: string | null
+          edges?: Json
+          id?: string
+          name?: string
+          nodes?: Json
+          source_json?: string
+          target_json?: string
+          template_variables?: Json | null
+          transforms?: Json
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -414,6 +459,50 @@ export type Database = {
           user_id?: string | null
         }
         Relationships: []
+      }
+      webhook_configs: {
+        Row: {
+          collection_id: string
+          created_at: string
+          enabled: boolean
+          endpoint: string
+          headers: Json
+          id: string
+          method: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          collection_id: string
+          created_at?: string
+          enabled?: boolean
+          endpoint: string
+          headers?: Json
+          id?: string
+          method: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          collection_id?: string
+          created_at?: string
+          enabled?: boolean
+          endpoint?: string
+          headers?: Json
+          id?: string
+          method?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "webhook_configs_collection_id_fkey"
+            columns: ["collection_id"]
+            isOneToOne: false
+            referencedRelation: "mapping_collections"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       webhook_scripts: {
         Row: {

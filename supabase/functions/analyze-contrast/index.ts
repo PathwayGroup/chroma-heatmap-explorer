@@ -24,7 +24,8 @@ serve(async (req) => {
     console.log('Analyzing contrast for URL:', url);
 
     // For now, we'll use the mock data from mockData.ts
-    const { getColorPairsForUrl } from './mockData.ts';
+    // Fix: Use the correct import syntax
+    import { getColorPairsForUrl } from './mockData.ts';
     const colorPairs = await getColorPairsForUrl(url);
 
     // Calculate summary statistics
